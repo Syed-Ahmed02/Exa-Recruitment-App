@@ -99,7 +99,7 @@ export default function LinkedInSearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100 p-2 sm:p-4">
       <div className="mx-auto max-w-2xl">
         <Card className="bg-white shadow-lg">
           <CardHeader>
@@ -177,17 +177,17 @@ export default function LinkedInSearchPage() {
                   {linkedinResults.map((result, index) => (
                     <div
                       key={index}
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="w-full p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="font-semibold text-blue-600 hover:text-blue-800">{result.title}</div>
-                          <div className="text-sm text-gray-500 mt-1">{result.url}</div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-blue-600 hover:text-blue-800 break-words text-sm sm:text-base">{result.title}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 mt-1 break-all">{result.url}</div>
                         </div>
                         <Button
                           onClick={() => handleProfileClick(result.url)}
                           disabled={loading}
-                          className="ml-4"
+                          className="w-full sm:w-auto sm:ml-4 flex-shrink-0"
                         >
                           {loading ? (
                             <div className="flex items-center">
@@ -207,8 +207,8 @@ export default function LinkedInSearchPage() {
 
             {/* Selected Profile Details */}
             {selectedProfile && (
-              <div className="mt-8 bg-green-50 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4">Selected Profile: {selectedLinkedin}</h2>
+              <div className="mt-8 bg-green-50 rounded-lg p-4 sm:p-6">
+                <h2 className="text-sm sm:text-xl font-bold mb-4 break-all">Selected Profile: {selectedLinkedin}</h2>
 
                 {loading ? (
                   <div className="text-center py-8">
@@ -220,8 +220,8 @@ export default function LinkedInSearchPage() {
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold ">Experience Summary</h3>
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <h3 className="font-bold text-sm sm:text-base">Experience Summary</h3>
                         <CopyButton 
                           content={selectedProfile.summary}
                           onCopy={() => console.log("Summary copied!")}
@@ -229,20 +229,20 @@ export default function LinkedInSearchPage() {
                           size="sm"
                         />
                       </div>
-                      <p className="text-gray-600 leading-relaxed">{selectedProfile.summary}</p>
+                      <p className="text-gray-600 leading-relaxed text-sm sm:text-base break-words">{selectedProfile.summary}</p>
                     </div>
 
                     {selectedProfile.social_links && selectedProfile.social_links.length > 0 && (
                       <div>
-                        <span className="font-bold">Social Links: </span>
+                        <span className="font-bold text-sm sm:text-base">Social Links: </span>
                         <ul className="list-disc list-inside mt-1">
                           {selectedProfile.social_links.map((link: string, idx: number) => (
-                            <li key={idx}>
+                            <li key={idx} className="break-all">
                               <Link
                                 href={link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
+                                className="text-blue-600 hover:text-blue-800 underline text-xs sm:text-sm"
                               >
                                 {link}
                               </Link>
@@ -261,7 +261,7 @@ export default function LinkedInSearchPage() {
         </Card>
         
         {/* Footer */}
-        <div className="text-center mt-8 text-gray-500 text-sm">
+        <div className="text-center mt-6 sm:mt-8 text-gray-500 text-xs sm:text-sm px-2">
           Built by{" "}
           <Link
             href="https://www.linkedin.com/in/syed-ahmedd/"
