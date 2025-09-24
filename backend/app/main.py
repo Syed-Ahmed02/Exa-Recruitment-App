@@ -32,6 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "API is running"}
+
 UNIVERSITY_MAP = {
     "Guelph": "University of Guelph",
     "Conestoga": "Conestoga College",
