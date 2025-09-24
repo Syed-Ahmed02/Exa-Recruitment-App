@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CopyButton } from "@/components/ui/shadcn-io/copy-button"
+import Link from "next/link"
 
 // TypeScript interfaces
 interface LinkedinResult {
@@ -16,15 +18,14 @@ interface LinkedinResult {
 
 interface ProfileDetails {
   summary: string
-  github_url?: string
-  personal_website?: string
+  social_links?: string[]
 }
 
 export default function LinkedInSearchPage() {
   // State management
   const [name, setName] = useState("")
-  const [university, setUniversity] = useState("Waterloo")
-  const [degreeStatus, setDegreeStatus] = useState("PhD")
+  const [university, setUniversity] = useState("Laurier")
+  const [degreeStatus, setDegreeStatus] = useState("Bachelor's")
   const [linkedinResults, setLinkedinResults] = useState<LinkedinResult[]>([])
   const [selectedProfile, setSelectedProfile] = useState<ProfileDetails | null>(null)
   const [loading, setLoading] = useState(false)
@@ -43,7 +44,7 @@ export default function LinkedInSearchPage() {
     setSelectedProfile(null)
 
     try {
-      const response = await fetch("http://localhost:8000/search-linkedin", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/search-linkedin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export default function LinkedInSearchPage() {
     setLoading(true)
 
     try {
-      const response = await fetch("http://localhost:8000/profile-details", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-details`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +117,7 @@ export default function LinkedInSearchPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter student's full name"
+                  placeholder="Enter student's full name, eg. Syed Ahmed"
                   required
                   className="w-full"
                 />
@@ -157,7 +158,14 @@ export default function LinkedInSearchPage() {
               </div>
 
               <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                {loading ? "Searching..." : "Search LinkedIn"}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Searching...
+                  </div>
+                ) : (
+                  "Search LinkedIn"
+                )}
               </Button>
             </form>
 
@@ -167,15 +175,31 @@ export default function LinkedInSearchPage() {
                 <h2 className="text-xl font-bold mb-4">Top 5 LinkedIn Profiles</h2>
                 <div className="space-y-2">
                   {linkedinResults.map((result, index) => (
-                    <button
+                    <div
                       key={index}
-                      onClick={() => handleProfileClick(result.url)}
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors text-left"
-                      disabled={loading}
+                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="font-semibold text-blue-600 hover:text-blue-800">{result.title}</div>
-                      <div className="text-sm text-gray-500 mt-1">{result.url}</div>
-                    </button>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="font-semibold text-blue-600 hover:text-blue-800">{result.title}</div>
+                          <div className="text-sm text-gray-500 mt-1">{result.url}</div>
+                        </div>
+                        <Button
+                          onClick={() => handleProfileClick(result.url)}
+                          disabled={loading}
+                          className="ml-4"
+                        >
+                          {loading ? (
+                            <div className="flex items-center">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-1"></div>
+                              Loading...
+                            </div>
+                          ) : (
+                            "Select"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -187,49 +211,68 @@ export default function LinkedInSearchPage() {
                 <h2 className="text-xl font-bold mb-4">Selected Profile: {selectedLinkedin}</h2>
 
                 {loading ? (
-                  <div className="text-center py-4">
-                    <p>Loading...</p>
+                  <div className="text-center py-8">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                      <p className="text-gray-600">Loading profile details...</p>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="font-bold mb-2">Experience Summary</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-bold ">Experience Summary</h3>
+                        <CopyButton 
+                          content={selectedProfile.summary}
+                          onCopy={() => console.log("Summary copied!")}
+                          variant="default"
+                          size="sm"
+                        />
+                      </div>
                       <p className="text-gray-600 leading-relaxed">{selectedProfile.summary}</p>
                     </div>
 
-                    {selectedProfile.github_url && (
+                    {selectedProfile.social_links && selectedProfile.social_links.length > 0 && (
                       <div>
-                        <span className="font-bold">GitHub: </span>
-                        <a
-                          href={selectedProfile.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                          {selectedProfile.github_url}
-                        </a>
+                        <span className="font-bold">Social Links: </span>
+                        <ul className="list-disc list-inside mt-1">
+                          {selectedProfile.social_links.map((link: string, idx: number) => (
+                            <li key={idx}>
+                              <Link
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                {link}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
 
-                    {selectedProfile.personal_website && (
-                      <div>
-                        <span className="font-bold">Personal Website: </span>
-                        <a
-                          href={selectedProfile.personal_website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                          {selectedProfile.personal_website}
-                        </a>
-                      </div>
-                    )}
+                   
                   </div>
                 )}
               </div>
             )}
           </CardContent>
         </Card>
+        
+        {/* Footer */}
+        <div className="text-center mt-8 text-gray-500 text-sm">
+          Built by{" "}
+          <Link
+            href="https://www.linkedin.com/in/syed-ahmedd/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
+          >
+            Syed
+          </Link>{" "}
+          :)
+        </div>
       </div>
     </div>
   )
